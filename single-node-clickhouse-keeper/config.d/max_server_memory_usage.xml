@@ -3,6 +3,5 @@
     <max_server_memory_usage replace="1" from_env="MAX_SERVER_MEMORY_USAGE" /> <!-- clickhouse can not detect limits set by docker / cgroups -->
     <mark_cache_size replace="1">536870912</mark_cache_size> <!-- 512Mb: not for prod! -->
     <uncompressed_cache_size replace="1">100000000</uncompressed_cache_size> <!-- uncompressed_cache is normally disabled, so that adjusting size 'just in case' -->
-    <remap_executable replace="1">true</remap_executable>
     <mlock_executable replace="1">false</mlock_executable> <!-- will work bit slower, but will use less ram -->
 </yandex>
