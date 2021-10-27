@@ -1,0 +1,50 @@
+version: '2.3'
+
+# single-node cluster, nice for local dev
+
+services:
+  clickhouse:
+    image: yandex/clickhouse-server:21.8
+    hostname: clickhouse
+    expose:
+      - "9000"
+      - "8123"
+      - "9181" # zookeeper port
+    volumes:
+      - ./config.d/remote_servers.xml:/etc/clickhouse-server/config.d/remote_servers.xml
+      - ./config.d/macros.xml:/etc/clickhouse-server/config.d/macros.xml
+      - ./config.d/system_log_tables.xml:/etc/clickhouse-server/config.d/system_log_tables.xml
+      - ./config.d/max_server_memory_usage.xml:/etc/clickhouse-server/config.d/max_server_memory_usage.xml
+      - ./config.d/zookeeper.xml:/etc/clickhouse-server/config.d/zookeeper.xml
+      - ./config.d/keeper.xml:/etc/clickhouse-server/config.d/keeper.xml
+      - ./users.d/default_profile.xml:/etc/clickhouse-server/users.d/default_profile.xml
+      - ./instances/clickhouse/database/:/var/lib/clickhouse/    # folder with data
+      - ./instances/clickhouse/logs/:/var/log/clickhouse-server/ # folder with logs 
+    environment:
+      SHARD: 01
+      REPLICA: 01
+      CLUSTER: testcluster           # see also remote_servers.xml
+      MAX_SERVER_MEMORY_USAGE: 7800000000 # see also max_server_memory_usage.xml 
+      MAX_MEMORY_USAGE: 6000000000
+      MAX_BYTES_BEFORE_EXTERNAL_SORT: 0
+      MAX_BYTES_BEFORE_EXTERNAL_GROUP_BY: 0
+      MAX_THREADS: 0                 # half of avaliable cores
+    mem_limit: 8000M
+    cpus: 2.0
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    cap_add:
+      - SYS_PTRACE
+      - NET_ADMIN
+      - IPC_LOCK
+      - SYS_NICE
+    security_opt:
+      - label:disable
+    healthcheck:
+      test: clickhouse client --query='select 1'
+      interval: 3s
+      timeout: 2s
+      retries: 5
+      start_period: 2s

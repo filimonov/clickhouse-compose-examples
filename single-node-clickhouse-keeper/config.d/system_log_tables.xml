@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<yandex>
+    <asynchronous_metrics_update_period_s>20</asynchronous_metrics_update_period_s>
+
+<!-- those 2 tables are quite low-level, and mostly interested for clickhouse developers  -->
+    <trace_log remove="1"/>
+    <query_thread_log remove="1" />
+
+<!--
+    those can be disabled if you have some alternative monitoring 
+    <metric_log remove="1" /> 
+    <asynchronous_metric_log remove="1" />
+-->
+
+    <metric_log replace="1">
+        <database>system</database>
+        <table>metric_log</table>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+        <collect_interval_milliseconds>1000</collect_interval_milliseconds>
+        <engine>
+ENGINE = MergeTree
+PARTITION BY event_date
+ORDER BY (event_time)
+TTL event_date + interval 60 day
+SETTINGS ttl_only_drop_parts=1
+        </engine>
+    </metric_log>
+
+    <asynchronous_metric_log replace="1">
+        <database>system</database>
+        <table>asynchronous_metric_log</table>
+        <flush_interval_milliseconds>40000</flush_interval_milliseconds>
+        <engine>
+ENGINE = MergeTree
+PARTITION BY event_date
+ORDER BY (event_time)
+TTL event_date + interval 60 day
+SETTINGS ttl_only_drop_parts=1
+        </engine>
+    </asynchronous_metric_log>
+
+    <query_log replace="1">
+        <database>system</database>
+        <table>query_log</table>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+        <engine>
+ENGINE = MergeTree
+PARTITION BY event_date
+ORDER BY (event_time)
+TTL event_date + interval 90 day
+SETTINGS ttl_only_drop_parts=1
+        </engine>
+    </query_log>
+
+    <part_log replace="1">
+        <database>system</database>
+        <table>part_log</table>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+        <engine>
+ENGINE = MergeTree
+PARTITION BY event_date
+ORDER BY (event_time)
+TTL event_date + interval 90 day
+SETTINGS ttl_only_drop_parts=1
+        </engine>
+    </part_log>
+
+</yandex>

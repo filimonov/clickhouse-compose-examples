@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<yandex>
+    <profiles>
+        <default>
+           <max_memory_usage replace="1" from_env="MAX_MEMORY_USAGE" />
+           <max_bytes_before_external_group_by from_env="MAX_BYTES_BEFORE_EXTERNAL_GROUP_BY" />
+           <max_bytes_before_external_sort from_env="MAX_BYTES_BEFORE_EXTERNAL_SORT" />
+           <max_threads from_env="MAX_THREADS" />
+        </default>
+    </profiles>
+</yandex>
