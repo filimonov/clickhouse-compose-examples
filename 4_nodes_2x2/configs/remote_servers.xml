@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<yandex>
+    <remote_servers>
+<!-- main and default cluster topology, will be used for all big tables
+You will create tables with that 'default' topology using commands like
+CREATE TABLE ... Engine=ReplicatedMergeTree('/clickhouse/tables/{shard_new}/database_name/table_name', '{replica_new}')
+ON CLUSTER 'smart_new_cluster';
+-->
+        <testcluster>
+            <shard>
+                <internal_replication>true</internal_replication>
+                <replica><host>clickhouse1</host><port>9000</port></replica>
+                <replica><host>clickhouse2</host><port>9000</port></replica>
+            </shard>
+            <shard>
+                <internal_replication>true</internal_replication>
+                <replica><host>clickhouse3</host><port>9000</port></replica>
+                <replica><host>clickhouse4</host><port>9000</port></replica>
+            </shard>
+        </testcluster>
+<!--
+  this one may be used to collect some information from all cluster nodes,
+  for example to make lookups in system database clusterwise
+
+  You will usually create only Distributed tables in that 'sharded' topology with commands like:
+  CREATE TABLE system.query_log_all AS system.query_log ENGINE = Distributed(smart_new_cluster_all_sharded, system, query_log) ON CLUSTER smart_new_cluster_all_sharded;
+-->
+        <testcluster_all_sharded>
+            <shard><replica><host>clickhouse1</host><port>9000</port></replica></shard>
+            <shard><replica><host>clickhouse2</host><port>9000</port></replica></shard>
+            <shard><replica><host>clickhouse3</host><port>9000</port></replica></shard>
+            <shard><replica><host>clickhouse4</host><port>9000</port></replica></shard>
+        </testcluster_all_sharded>
+<!--
+  this one may be used when you need to have some table
+  replicated and having exactly the same contents on all the cluster nodes
+  usually it's something like dimension dictionaries etc.
+
+  You will usually create only Distributed tables in that 'sharded' topology with commands like:
+  CREATE TABLE ... Engine=ReplicatedMergeTree('/clickhouse/tables/unsharded/database_name/table_name', '{replica_new}')
+    ON CLUSTER 'testcluster_all_replicated';
+-->
+        <testcluster_all_replicated>
+            <shard>
+                <internal_replication>true</internal_replication>
+                <replica><host>clickhouse1</host><port>9000</port></replica>
+                <replica><host>clickhouse2</host><port>9000</port></replica>
+                <replica><host>clickhouse3</host><port>9000</port></replica>
+                <replica><host>clickhouse4</host><port>9000</port></replica>
+            </shard>
+        </testcluster_all_replicated>
+    </remote_servers>
+</yandex>
