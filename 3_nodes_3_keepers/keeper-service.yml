@@ -1,0 +1,18 @@
+version: '2.3'
+
+services:
+  keeper:
+    image: clickhouse/clickhouse-keeper:head-alpine 
+    expose:
+      - "9181" # zookeeper port
+    volumes:
+        - ./configs/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
+    healthcheck:
+      test: echo ruok | nc localhost 9181
+      interval: 3s
+      timeout: 2s
+      retries: 5
+      start_period: 2s
+    security_opt:
+      - label:disable
+      

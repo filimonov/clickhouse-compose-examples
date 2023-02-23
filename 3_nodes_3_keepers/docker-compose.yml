@@ -1,0 +1,128 @@
+version: '2.3'
+
+services:
+  keeper1:
+    extends:
+      file: keeper-service.yml
+      service: keeper
+    image: clickhouse/clickhouse-keeper:head-alpine 
+    expose:
+      - "9181"
+    environment:
+      ZOO_TICK_TIME: 500
+      ZOO_MY_ID: 1
+  #    ZOO_SERVERS: server.1=0.0.0.0:2888:3888
+    healthcheck:
+      test: echo ruok | nc localhost 9181
+      interval: 3s
+      timeout: 2s
+      retries: 5
+      start_period: 2s
+    security_opt:
+        - label:disable
+
+  keeper2:
+    extends:
+      file: keeper-service.yml
+      service: keeper      
+    image: clickhouse/clickhouse-keeper:head-alpine 
+    expose:
+      - "9181"
+    environment:
+      ZOO_TICK_TIME: 500
+      ZOO_MY_ID: 2
+  #    ZOO_SERVERS: server.1=0.0.0.0:2888:3888
+    healthcheck:
+      test: echo ruok | nc localhost 9181
+      interval: 3s
+      timeout: 2s
+      retries: 5
+      start_period: 2s
+    security_opt:
+        - label:disable
+
+  keeper3:
+    extends:
+      file: keeper-service.yml
+      service: keeper      
+    image: clickhouse/clickhouse-keeper:head-alpine
+    expose:
+      - "9181"
+    environment:
+      ZOO_TICK_TIME: 500
+      ZOO_MY_ID: 3
+  #    ZOO_SERVERS: server.1=0.0.0.0:2888:3888
+    healthcheck:
+      test: echo ruok | nc localhost 9181
+      interval: 3s
+      timeout: 2s
+      retries: 5
+      start_period: 2s
+    security_opt:
+        - label:disable
+
+  clickhouse1:
+    extends:
+      file: clickhouse-service.yml
+      service: clickhouse
+    hostname: clickhouse1
+    environment:
+      SHARD: 00
+      REPLICA: 01
+      CLUSTER: testcluster
+    volumes:
+      - ./_instances/clickhouse1/database/:/var/lib/clickhouse/
+      - ./_instances/clickhouse1/logs/:/var/log/
+    depends_on:
+      keeper1:
+        condition: service_healthy
+
+  clickhouse2:
+    extends:
+      file: clickhouse-service.yml
+      service: clickhouse
+    hostname: clickhouse2
+    environment:
+      SHARD: 00
+      REPLICA: 02
+      CLUSTER: testcluster
+    volumes:
+      - ./_instances/clickhouse2/database/:/var/lib/clickhouse/
+      - ./_instances/clickhouse2/logs/:/var/log/clickhouse-server/
+    depends_on:
+      keeper2:
+        condition: service_healthy
+
+  clickhouse3:
+    extends:
+      file: clickhouse-service.yml
+      service: clickhouse
+    hostname: clickhouse3
+    environment:
+      SHARD: 00
+      REPLICA: 03
+      CLUSTER: testcluster
+    volumes:
+      - ./_instances/clickhouse3/database/:/var/lib/clickhouse/
+      - ./_instances/clickhouse3/logs/:/var/log/clickhouse-server/
+    depends_on:
+      keeper3:
+        condition: service_healthy
+
+  # dummy service which do nothing, but allows to postpone 'docker-compose up -d' till all dependecies will go healthy
+  all_services_ready:
+    image: hello-world
+    depends_on:
+      clickhouse1:
+        condition: service_healthy
+      clickhouse2:
+        condition: service_healthy
+      clickhouse3:
+        condition: service_healthy
+      keeper1:
+        condition: service_healthy
+      keeper2:
+        condition: service_healthy
+      keeper3:
+        condition: service_healthy
+
